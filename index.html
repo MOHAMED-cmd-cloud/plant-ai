@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نباتي الذكي | كاشف الأمراض</title>
+    <title>نباتي الذكي | كاشف الأمراض والمستشار الزراعي</title>
     
     <link rel="icon" type="image/png" href="favicon.png">
 
@@ -13,15 +13,14 @@
     <style>
         :root {
             --primary: #27ae60;
-            --danger: #e74c3c;
-            --warning: #f1c40f;
-            --light: #f8f9fa;
-            --dark: #2d3436;
+            --secondary: #2ecc71;
+            --bg: #f4f7f6;
+            --text: #2d3436;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #eef2f3;
+            background-color: var(--bg);
             margin: 0;
             display: flex;
             flex-direction: column;
@@ -36,37 +35,40 @@
             width: 100%;
             padding: 20px 0;
             text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            font-size: 1.4rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            font-size: 1.5rem;
             font-weight: bold;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
+            margin-bottom: 30px;
         }
 
-        .container {
-            background: white;
-            padding: 25px;
-            border-radius: 25px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        .main-container {
             width: 90%;
             max-width: 500px;
-            margin: 30px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
             text-align: center;
         }
 
-        /* منطقة الرفع */
-        .upload-section {
+        /* منطقة رفع الصورة */
+        .upload-area {
             border: 3px dashed var(--primary);
             background: #f9fffb;
-            padding: 40px 15px;
-            border-radius: 20px;
+            padding: 40px 20px;
+            border-radius: 15px;
             cursor: pointer;
             position: relative;
             transition: 0.3s;
         }
 
-        .upload-section:hover { background: #eefdf3; }
+        .upload-area:hover { background: #eefdf3; }
 
         #imageUpload {
             position: absolute;
@@ -76,26 +78,24 @@
 
         #preview {
             max-width: 100%;
-            border-radius: 15px;
-            margin-top: 20px;
+            border-radius: 12px;
+            margin-top: 15px;
             display: none;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
-        /* الأزرار */
+        /* أزرار التحكم */
         #predictBtn {
             background: var(--primary);
             color: white;
             border: none;
-            padding: 16px;
+            padding: 15px;
             font-size: 1.1rem;
-            border-radius: 12px;
+            border-radius: 10px;
             cursor: pointer;
             width: 100%;
-            margin-top: 20px;
+            margin-top: 15px;
             display: none;
             font-weight: bold;
-            box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3);
         }
 
         /* مؤشر التحميل */
@@ -103,134 +103,128 @@
             border: 5px solid #f3f3f3;
             border-top: 5px solid var(--primary);
             border-radius: 50%;
-            width: 45px; height: 45px;
+            width: 40px; height: 40px;
             animation: spin 1s linear infinite;
             display: none;
-            margin: 20px auto;
+            margin: 15px auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* صندوق النتائج */
         #result-box {
-            margin-top: 25px;
-            padding: 20px;
-            border-radius: 15px;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 12px;
             display: none;
             text-align: right;
-            border-right: 8px solid var(--primary);
             background: #fff;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-right: 6px solid var(--primary);
         }
 
-        .medicine-card {
-            background: #eefdf3;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 12px;
-            border: 1px solid #d4edda;
-        }
-
-        /* نصيحة اليوم */
+        /* صندوق نصيحة اليوم */
         .advice-box {
             background: #fff9db;
             border: 1px solid #ffe066;
             padding: 15px;
             border-radius: 15px;
-            margin-top: 20px;
-            width: 90%;
-            max-width: 500px;
             display: flex;
             align-items: flex-start;
-            gap: 10px;
+            gap: 12px;
+            text-align: right;
         }
 
         footer {
-            margin-top: auto;
-            padding: 25px;
+            margin-top: 40px;
+            padding-bottom: 20px;
             color: #7f8c8d;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
     </style>
 </head>
 <body>
 
-<nav>🌿 تطبيق نباتي الذكي</nav>
+<nav>🍃 منصة نباتي الذكية</nav>
 
-<div class="container">
-    <div class="upload-section">
-        <div style="font-size: 50px;">🌱</div>
-        <p id="uploadText">اضغط هنا لتصوير أو رفع ورقة النبات</p>
-        <input type="file" id="imageUpload" accept="image/*">
+<div class="main-container">
+    
+    <div class="card">
+        <div class="upload-area">
+            <div style="font-size: 40px;">📸</div>
+            <p id="uploadText">اضغط هنا لتصوير ورقة النبات</p>
+            <input type="file" id="imageUpload" accept="image/*">
+        </div>
+
+        <img id="preview" alt="المعاينة">
+        <div class="loader" id="loader"></div>
+        <button id="predictBtn" onclick="startAnalysis()">فحص الحالة الآن 🔍</button>
+
+        <div id="result-box">
+            <h3 id="diseaseName" style="margin: 0 0 10px 0;"></h3>
+            <div id="medicineInfo" style="background: #f0fdf4; padding: 12px; border-radius: 8px; font-size: 0.95rem;"></div>
+            <p id="accuracy" style="font-size: 0.75rem; color: #95a5a6; margin-top: 10px;"></p>
+        </div>
     </div>
 
-    <img id="preview" alt="المعاينة">
-
-    <div class="loader" id="loader"></div>
-
-    <button id="predictBtn" onclick="processImage()">ابدأ الفحص الآن 🔍</button>
-
-    <div id="result-box">
-        <h2 id="diseaseName" style="margin: 0 0 10px 0;"></h2>
-        <div class="medicine-card" id="medicineInfo"></div>
-        <p id="accuracy" style="font-size: 0.8rem; color: #7f8c8d; margin-top:15px;"></p>
+    <div class="advice-box">
+        <span style="font-size: 24px;">💡</span>
+        <div>
+            <strong style="display: block; color: #856404; margin-bottom: 4px;">نصيحة اليوم:</strong>
+            <span id="advice-text">جاري اختيار نصيحة مفيدة...</span>
+        </div>
     </div>
+
 </div>
 
-<div class="advice-box">
-    <span style="font-size: 24px;">💡</span>
-    <div>
-        <strong style="display: block; color: #856404; margin-bottom: 5px;">نصيحة اليوم الزراعية:</strong>
-        <span id="advice-text">جاري اختيار نصيحة لك...</span>
-    </div>
-</div>
-
-<footer>تم التطوير بواسطة ذكاء اصطناعي متخصص • 2026</footer>
+<footer>جميع الحقوق محفوظة لمنصة نباتي الذكية 2026</footer>
 
 <script>
     const URL = "./"; 
     let model;
 
-    // قاعدة البيانات المحدثة
-    const plantData = {
+    // بيانات الأمراض (تأكد من مطابقة الأسماء للموديل الخاص بك)
+    const plantDatabase = {
         "Tomato_Early_blight": {
             ar: "لفحة الطماطم المبكرة",
-            cure: "يجب رش النبات بمبيد فطري نحاسي. يفضل إزالة الأوراق السفلية المصابة لمنع انتشار الفطريات للأعلى."
+            cure: "إزالة الأوراق المصابة فوراً، ورش مبيد فطري يحتوي على النحاس."
         },
         "Potato___Late_blight": {
             ar: "لفحة البطاطس المتأخرة",
-            cure: "استخدم مبيدات تحتوي على مادة (مانكوزيب). تأكد من جفاف الأوراق قبل غروب الشمس وتجنب الري بالرش."
+            cure: "استخدام مبيد (مانكوزيب)، وتجنب زيادة الرطوبة حول النبات."
         },
         "Healthy": {
             ar: "النبات سليم ومعافى ✨",
-            cure: "استمر في هذا العمل الرائع! تأكد من التسميد المتوازن مرة كل أسبوعين في فصل النمو."
+            cure: "استمر في العناية الدورية وتأكد من جودة الري والتسميد."
         }
     };
 
-    // نصائح اليوم
-    const dailyTips = [
-        "أفضل وقت لري النباتات هو الصباح الباكر لتقليل التبخر.",
-        "تأكد من تنظيف أوراق النباتات الكبيرة بقطعة قماش مبللة للسماح لها بالتنفس.",
-        "الماء الزائد يقتل النبات أسرع من العطش، تأكد من جفاف التربة قبل الري مجدداً.",
-        "استخدم ماء سلق البيض (بعد بروده) لري النباتات، فهو غني بالكالسيوم الطبيعي.",
-        "تهوية التربة باستخدام شوكة زراعية تساعد الجذور على امتصاص الأكسجين بشكل أفضل."
+    // قائمة النصائح الزراعية
+    const tipsList = [
+        "لا تروِ النباتات في وقت الظهيرة لتجنب صدمة الجذور.",
+        "تأكد من وجود فتحات تصريف في الأصيص لمنع تعفن الجذور.",
+        "نظف أوراق النبات بقطعة قماش مبللة لتحسين عملية التمثيل الضوئي.",
+        "استخدم ماء سلق الخضار (بعد أن يبرد) كسماد طبيعي غني بالمعادن.",
+        "تجنب الإفراط في الري؛ التربة الرطبة دائماً تجذب الحشرات."
     ];
 
+    // تحميل الموديل عند البدء
     async function init() {
         try {
             model = await tmImage.load(URL + "model.json", URL + "metadata.json");
-            console.log("الذكاء الاصطناعي جاهز");
-            showRandomTip();
+            console.log("Model Loaded");
+            showRandomTip(); // عرض النصيحة فور التشغيل
         } catch (e) {
-            console.error("خطأ في الموديل");
+            console.error("خطأ في تحميل الموديل");
         }
     }
 
+    // عرض نصيحة عشوائية
     function showRandomTip() {
-        const rand = Math.floor(Math.random() * dailyTips.length);
-        document.getElementById("advice-text").innerText = dailyTips[rand];
+        const adviceElement = document.getElementById("advice-text");
+        const randomIndex = Math.floor(Math.random() * tipsList.length);
+        adviceElement.innerText = tipsList[randomIndex];
     }
 
-    // معاينة الصورة
+    // التعامل مع رفع الصورة
     document.getElementById("imageUpload").addEventListener("change", function(e) {
         const file = e.target.files[0];
         if (file) {
@@ -240,15 +234,15 @@
                 img.src = event.target.result;
                 img.style.display = "block";
                 document.getElementById("predictBtn").style.display = "block";
-                document.getElementById("uploadText").innerText = "تغيير الصورة 🔄";
                 document.getElementById("result-box").style.display = "none";
+                document.getElementById("uploadText").innerText = "تغيير الصورة 🔄";
             }
             reader.readAsDataURL(file);
         }
     });
 
-    // معالجة الفحص
-    async function processImage() {
+    // وظيفة الفحص
+    async function startAnalysis() {
         const loader = document.getElementById("loader");
         const resultBox = document.getElementById("result-box");
         const btn = document.getElementById("predictBtn");
@@ -260,9 +254,10 @@
 
         const prediction = await model.predict(img);
         
+        // محاكاة تأخير بسيط للجمالية
         setTimeout(() => {
             let best = prediction.sort((a, b) => b.probability - a.probability)[0];
-            const info = plantData[best.className] || { ar: "غير معروف", cure: "يرجى المحاولة بصورة أوضح." };
+            const info = plantDatabase[best.className] || { ar: "غير معروف", cure: "يرجى استشارة مختص زراعي." };
 
             loader.style.display = "none";
             btn.style.display = "block";
@@ -270,11 +265,15 @@
 
             document.getElementById("diseaseName").innerText = "الحالة: " + info.ar;
             document.getElementById("diseaseName").style.color = (best.className === "Healthy") ? "#27ae60" : "#c0392b";
-            document.getElementById("medicineInfo").innerHTML = "<strong>💊 خطة العلاج:</strong><br>" + info.cure;
+            document.getElementById("medicineInfo").innerHTML = "<strong>💊 العلاج المقترح:</strong><br>" + info.cure;
             document.getElementById("accuracy").innerText = "دقة التحليل: " + (best.probability * 100).toFixed(0) + "%";
-        }, 1500);
+            
+            // تحديث النصيحة عند كل فحص جديد لزيادة التفاعل
+            showRandomTip();
+        }, 1200);
     }
 
+    // تشغيل النظام
     init();
 </script>
 
