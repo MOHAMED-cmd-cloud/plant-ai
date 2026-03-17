@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نباتي الذكي - كشف الأمراض</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.9.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #27ae60;
+            --secondary-color: #2ecc71;
+            --bg-color: #f0f4f3;
+            --text-color: #2d3436;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* شريط علوي احترافي */
+        nav {
+            background: var(--primary-color);
+            color: white;
+            width: 100%;
+            padding: 15px 0;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 40px;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            width: 90%;
+            max-width: 550px;
+            text-align: center;
+        }
+
+        /* منطقة الرفع الكبيرة */
+        .upload-card {
+            border: 3px dashed var(--primary-color);
+            background: #f9fffb;
+            padding: 40px 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .upload-card:hover {
+            background: #e8f5e9;
+            transform: translateY(-2px);
+        }
+
+        #imageUpload {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; cursor: pointer;
+        }
+
+        #preview {
+            max-width: 100%;
+            border-radius: 12px;
+            margin-top: 20px;
+            display: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* زر الفحص */
+        #predictBtn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            display: none; /* يظهر عند اختيار صورة */
+            font-weight: bold;
+        }
+
+        /* مؤشر التحميل */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px; height: 40px;
+            animation: spin 1s linear infinite;
+            display: none;
+            margin: 20px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* صندوق النتيجة والعلاج */
+        #result-box {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 15px;
+            display: none;
+            text-align: right;
+            border-right: 6px solid var(--primary-color);
+            background: #ffffff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .treatment-tag {
+            background: #e8f5e9;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 20px;
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+
+<nav>🌿 منصة كشف أمراض النباتات الذكية</nav>
+
+<div class="container">
+    <div class="upload-card">
+        <span style="font-size: 40px;">📸</span>
+        <p id="uploadText">اضغط هنا لإدخال صورة الورقة المصابة</p>
+        <input type="file" id="imageUpload" accept="image/*">
+    </div>
+
+    <img id="preview" alt="معاينة">
+
+    <div class="loader" id="loader"></div>
+
+    <button id="predictBtn" onclick="startAnalysis()">بدء الفحص المخبري 🔍</button>
+
+    <div id="result-box">
+        <h2 id="diseaseName" style="color: #c0392b; margin-top:0;"></h2>
+        <div class="treatment-tag" id="medicineInfo"></div>
+        <p id="accuracy" style="font-size: 0.8rem; color: #95a5a6; margin-top:15px;"></p>
+    </div>
+</div>
+
+<footer>جميع الحقوق محفوظة - نظام تحليل النبات الذكي 2026</footer>
+
+<script>
+    // تأكد أن ملفات الموديل (model.json, metadata.json) بجانب هذا الملف
+    const URL = "./"; 
+    let model;
+
+    // قاعدة بيانات الأمراض الخاصة بك
+    const plantDatabase = {
+        "Tomato_Early_blight": {
+            name: "لفحة الطماطم المبكرة",
+            medicine: "استخدم مبيداً فطرياً يحتوي على 'النحاس'. قم بإزالة الأوراق السفلية المصابة لتقليل انتشار العدوى."
+        },
+        "Potato___Late_blight": {
+            name: "لفحة البطاطس المتأخرة",
+            medicine: "رش النبات بمبيد 'مانكوزيب'. تجنب سقي النباتات من الأعلى (الرش) لتقليل الرطوبة على الأوراق."
+        },
+        "Healthy": {
+            name: "النبات سليم ومعافى ✨",
+            medicine: "استمر في العناية الجيدة! تأكد من التسميد المتوازن والري المنتظم للحفاظ على المناعة."
+        }
+    };
+
+    // تحميل الموديل عند فتح الصفحة
+    async function init() {
+        try {
+            model = await tmImage.load(URL + "model.json", URL + "metadata.json");
+            console.log("الموديل جاهز!");
+        } catch (e) {
+            alert("خطأ: لم يتم العثور على ملفات الموديل في المجلد.");
+        }
+    }
+
+    // التعامل مع رفع الصورة
+    document.getElementById("imageUpload").addEventListener("change", function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = document.getElementById("preview");
+                img.src = event.target.result;
+                img.style.display = "block";
+                document.getElementById("predictBtn").style.display = "block";
+                document.getElementById("uploadText").innerText = "تم اختيار الصورة ✅";
+                document.getElementById("result-box").style.display = "none";
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // عملية الفحص
+    async function startAnalysis() {
+        const loader = document.getElementById("loader");
+        const resultBox = document.getElementById("result-box");
+        const predictBtn = document.getElementById("predictBtn");
+
+        loader.style.display = "block";
+        predictBtn.style.display = "none";
+        resultBox.style.display = "none";
+
+        const img = document.getElementById("preview");
+        
+        // إجراء التوقع
+        const prediction = await model.predict(img);
+        
+        // محاكاة تأخير بسيط للواقعية
+        setTimeout(() => {
+            let best = prediction.sort((a, b) => b.probability - a.probability)[0];
+            const data = plantDatabase[best.className] || { name: "غير معروف", medicine: "يرجى مراجعة خبير." };
+
+            loader.style.display = "none";
+            predictBtn.style.display = "block";
+            resultBox.style.display = "block";
+
+            document.getElementById("diseaseName").innerText = "التشخيص: " + data.name;
+            document.getElementById("medicineInfo").innerHTML = "<strong>💊 العلاج المقترح:</strong><br>" + data.medicine;
+            document.getElementById("accuracy").innerText = "نسبة دقة الذكاء الاصطناعي: " + (best.probability*100).toFixed(0) + "%";
+            
+            // تغيير اللون إذا كان النبات سليماً
+            if(best.className === "Healthy") {
+                resultBox.style.borderColor = "#27ae60";
+                document.getElementById("diseaseName").style.color = "#27ae60";
+            } else {
+                resultBox.style.borderColor = "#e74c3c";
+                document.getElementById("diseaseName").style.color = "#c0392b";
+            }
+        }, 1200);
+    }
+
+    init();
+</script>
+
+</body>
+</html>
